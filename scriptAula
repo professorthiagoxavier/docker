@@ -1,0 +1,100 @@
+docker run --name testesqlserver2017 -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=DockerSql2017!" -e "MSSQL_PID=Developer" --cap-add SYS_PTRACE -p 1433:1433 -v C:\SQLServer2017:/var/opt/mssql -d microsoft/mssql-server-linux:2017-latest
+
+docker run --name testesqlserver2019 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=DockerSql2019!' -p 1433:1433 -v C:\SQLServer2017:/var/opt/mssql -d mcr.microsoft.com/mssql/server:2017-CU8-ubuntu
+
+
+Exemplo 1 - criar um container mysql
+
+
+***Create docker file
+FROM mysql
+ENV MYSQL_ROOT_PASSWORD teste123
+
+
+**Criar imagem
+docker build -t mysql-image -f Dockerfile .
+
+
+** para ver as imagens disponíveis para uso
+docker image ls
+
+
+**Criar o container 
+docker run -d --rm --name mysql-container mysql-image
+
+- flag d: para não bloquear o terminal; 
+- flag rm: remover o container caso exista; 
+- name : é para nomear o container. 
+
+   
+**Exec mysql
+1-  docker exec -it mysql-container bash
+2- mysql -uroot -pteste123 
+
+
+**Criar o exemplo da base de dados
+
+create database if not exists
+   demodocker; 
+   user demodocker; 
+
+   create table produto(
+     id int(11) auto_increment, 
+     name varchar(255),
+     price decimal(10,2),
+     primary key(id)
+   );
+
+   insert into produto value(0, 'Curso docker', 150);
+   insert into produto value(0, 'Curso git', 2000);
+   
+   **Comandos para sair 
+   
+   exit 
+
+***Criar api nodejs
+
+
+Dentro da pasta Api
+1- npm init; 
+2- preencher as informações 
+3- npm install --save-dev nodemon      (para fazer um reload)
+4- npm install --save express mysql   (auxiliar nas rotas)
+
+5 - Abrir o arquivo package.json
+
+inserir o script: 
+
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start " : "nodemon ./src/index"
+  },
+  
+ 6-  Criar um arquivo api/src/index.js 
+ 
+ 
+const express = require('express');
+const app = express();
+
+app.listen(9001, '0.0.0.0', function() {
+  console.log('Listening on port 9001');
+})
+
+8 - criar um dockerfile
+FROM node:10-slim
+WORKDIR /home/node/app
+CMD npm start
+
+9 - Construir a imagem node (executar na raiz do projeto)
+docker build -t node-image -f api/Dockerfile .
+docker image ls    (verificar a imagem criada 
+
+Para windows
+docker run -d -v ${pwd}/api:/home/node/app -p 9001:9001 --link mysql-container --rm --name node-container node-image
+
+Para mac
+docker run -d -v $(pwd)/api:/home/node/app -p 9001:9001 --rm --name node-container node-image
+
+
+
+https://www.youtube.com/watch?v=Kzcz-EVKBEQ
